@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shell 64</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch.png">
+  <link rel="stylesheet" href="css/shell.css">
+</head>
+<body>
+  <header class="top">
+    <img src="icons/icon-192.png" alt="">
+    <div>
+      <h1>SHELL 64</h1>
+      <p>Weight storage, and reflex variable state instead of a weight matrix.</p>
+    </div>
+    <div class="modes">
+      <button type="button" id="mode-weight" class="active">Weights</button>
+      <button type="button" id="mode-reflex">Reflex</button>
+    </div>
+  </header>
+  <main>
+    <section id="weight" class="panel">
+      <h2>Quantized model storage</h2>
+      <p class="lede">Estimates the memory of a quantized model: parameter payload, group scales, zero points, extra group metadata, and overhead. Compared with a dense baseline. Activations and optimizer state are not included.</p>
+      <div class="grid">
+        <label><span>Model parameters</span><input id="w-params" type="number" min="1" step="1" value="7000000000"></label>
+        <label><span>Quantized bits</span><input id="w-qbits" type="number" min="1" max="64" step="1" value="4"></label>
+        <label><span>Baseline precision</span>
+          <select id="w-base">
+            <option value="FP64">FP64 — 64 bit</option>
+            <option value="FP32" selected>FP32 — 32 bit</option>
+            <option value="FP16">FP16 — 16 bit</option>
+            <option value="BF16">BF16 — 16 bit</option>
+            <option value="INT8">INT8 — 8 bit</option>
+          </select>
+        </label>
+        <label><span>Group size</span><input id="w-group" type="number" min="0" step="1" value="128"></label>
+        <label><span>Scale bits / group</span><input id="w-scale" type="number" min="0" step="1" value="16"></label>
+        <label><span>Zero-point bits / group</span><input id="w-zp" type="number" min="0" step="1" value="4"></label>
+        <label><span>Extra group metadata</span><input id="w-extra" type="number" min="0" step="1" value="0"></label>
+        <label><span>Model overhead (MiB)</span><input id="w-over" type="number" min="0" step="1" value="0"></label>
+      </div>
+      <div class="presets">
+        <button type="button" data-preset="7000000000:4">7B INT4</button>
+        <button type="button" data-preset="7000000000:8">7B INT8</button>
+        <button type="button" data-preset="13000000000:4">13B INT4</button>
+        <button type="button" data-preset="70000000000:4">70B INT4</button>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Quantized model size</span><b id="s-quant"></b></div>
+        <div class="stat"><span>Dense baseline size</span><b id="s-dense"></b></div>
+        <div class="stat"><span>Compression ratio</span><b id="s-ratio"></b></div>
+        <div class="stat"><span>Memory saved</span><b id="s-saved"></b></div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Component</th><th>Count</th><th>Bits each</th><th>Total bits</th><th>Storage</th></tr>
+        </thead>
+        <tbody id="w-rows"></tbody>
+      </table>
+      <p class="note">Effective bits / parameter <span id="s-eff"></span> · metadata share <span id="s-meta"></span>. Set group size to 0 to drop scales and zero points.</p>
+      <p class="formula" id="w-formula"></p>
+    </section>
+
+    <section id="reflex" class="panel" hidden>
+      <h2>Reflex variable state</h2>
+      <p class="lede">Same job as a weight table, written as Tool Radian states. Each data point is a readable token — tool, kind, and an angle inside ±45° — not a decimal in a matrix. This uses the Shell 64 encoder from the LEATR model.</p>
+      <div class="grid">
+        <label style="grid-column: span 2"><span>Statement or prompt</span><textarea id="r-text">1+1=</textarea></label>
+        <label><span>Emotion</span><select id="r-emotion"></select></label>
+        <label><span>Buoyancy shell</span>
+          <select id="r-shell">
+            <option value="">None</option>
+            <option value="AERO">Aerospace</option>
+            <option value="MAR">Maritime</option>
+            <option value="GEO">Geological</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="r-run">Encode</button>
+      </div>
+      <div class="stats">
+        <div class="stat" style="grid-column: span 2"><span>Field</span><b id="r-field"></b></div>
+        <div class="stat" style="grid-column: span 2"><span>Response</span><b id="r-response"></b></div>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Data point</th><th>State</th><th>Tool</th><th>Angle</th><th>Kind</th></tr>
+        </thead>
+        <tbody id="r-rows"></tbody>
+      </table>
+      <p class="formula" id="r-analysis"></p>
+      <div class="grid" style="margin-top: 16px">
+        <label><span>Decode a state</span><input id="r-state" value="md-0.1" autocomplete="off"></label>
+        <label><span>&nbsp;</span><button type="button" id="r-decode-btn">Decode</button></label>
+      </div>
+      <p class="note" id="r-decode"></p>
+      <p class="note">Tools: Maze m, Puzzle p, Envelope e, Hammer h, Stick s, Knife k, Scissors r. Kinds: d− data, d+ can build, db both, d neutral. A field (f) is the mean of its members. The angle cannot pass ±45°, one eighth of a diameter.</p>
+    </section>
+  </main>
+  <script src="js/ash-radian.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
