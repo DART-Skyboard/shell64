@@ -63,6 +63,30 @@
       </table>
       <p class="note">Effective bits / parameter <span id="s-eff"></span> · metadata share <span id="s-meta"></span>. Set group size to 0 to drop scales and zero points.</p>
       <p class="formula" id="w-formula"></p>
+      <h2 style="margin-top: 22px">Weight file to Shell 64</h2>
+      <p class="lede">A decimal weight file stores every coefficient. Shell 64 stores one reflex state per distinct data point, and a repeat only raises the count. The 63 shell checks, then math, then physics, all refine that same angle. They do not add another matrix.</p>
+      <div class="grid">
+        <label><span>Working precision (decimal places)</span>
+          <select id="c-prec">
+            <option value="1" selected>1 — tenths of a degree</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="6">6 — finest legal</option>
+          </select>
+        </label>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>FP32 weight file</span><b id="c-fp32"></b></div>
+        <div class="stat"><span>INT8 weight file</span><b id="c-int8"></b></div>
+        <div class="stat"><span>Shell 64 table</span><b id="c-shell"></b></div>
+        <div class="stat"><span>Smaller by</span><b id="c-ratio"></b></div>
+      </div>
+      <table>
+        <thead><tr><th>Store</th><th>What is kept</th><th>Size</th></tr></thead>
+        <tbody id="c-rows"></tbody>
+      </table>
+      <p class="note" id="c-note"></p>
     </section>
 
     <section id="reflex" class="panel" hidden>
