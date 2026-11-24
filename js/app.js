@@ -11,6 +11,14 @@
   $("mode-weight").addEventListener("click", () => show("weight"));
   $("mode-reflex").addEventListener("click", () => show("reflex"));
 
+  // LEATR activity: every user calculation is announced as a `shell64:calc` window event
+  // (numbers and op names only, never prompt text). js/leatr-beacon.js relays it to Autumn.
+  let booted = false;
+  function emit(op, mode, stats) {
+    if (!booted) return; // the page's own first render is not a user calculation
+    try { window.dispatchEvent(new CustomEvent("shell64:calc", { detail: { op: op, mode: mode, stats: stats || {}, ts: Date.now() } })); } catch (e) {}
+  }
+
   const BASE = { FP64: 64, FP32: 32, FP16: 16, BF16: 16, INT8: 8 };
 
   function num(id) {
@@ -83,7 +91,11 @@
     $("s-meta").textContent = metaShare.toFixed(4) + "%";
     const gTerm = group > 0 ? "groups × (" + scale + " scale + " + zp + " zero-point + " + extra + " extra)" : "0";
     $("w-formula").textContent = "Total bits = parameters × " + qBits + " + " + gTerm + " + overhead. Groups = " + bitsLabel(groups) + ".";
-    convert(params);
+    const shellBytes = convert(params);
+    emit(weight.op || "weight", "weight", { params: params, qbits: qBits, baseBits: baseBits, group: group,
+      quantBytes: Math.round(total / 8), denseBytes: Math.round(dense / 8), ratio: Number(ratio.toFixed(4)),
+      precision: Number($("c-prec").value) || 1, shellBytes: shellBytes });
+    weight.op = null;
   }
 
   function legalStates(prec) {
@@ -133,6 +145,7 @@
       "At " + prec + " decimal place" + (prec > 1 ? "s" : "") + " there are " + states.toLocaleString() +
       " legal states inside ±45°. Writing every one of them, in the measured record size from the radian training file, is " +
       formatBytes(shellBytes) + ". The same sighting again does not add a row. Math and physics share that angle, so a physics pass does not double the file.";
+    return shellBytes;
   }
 
   document.querySelectorAll("[data-preset]").forEach((button) => {
@@ -146,6 +159,7 @@
       $("w-zp").value = bits === "4" ? "4" : "8";
       $("w-extra").value = "0";
       $("w-over").value = "0";
+      weight.op = "preset";
       weight();
     });
   });
@@ -153,7 +167,7 @@
     $(id).addEventListener("input", weight);
     $(id).addEventListener("change", weight);
   });
-  $("c-prec").addEventListener("change", weight);
+  $("c-prec").addEventListener("change", () => { weight.op = "convert"; weight(); });
   weight();
 
   function fillEmotions() {
@@ -193,6 +207,8 @@
     $("r-field").textContent = result.encoded.field || "—";
     $("r-analysis").textContent = result.analysis.join("\n");
     $("r-response").textContent = result.response;
+    emit("reflex", "reflex", { tokens: result.encoded.tokens.length,
+      emotion: $("r-emotion").value === "neutral" ? undefined : $("r-emotion").value, shell: $("r-shell").value || undefined });
   }
 
   function decodeState() {
@@ -209,4 +225,5 @@
   });
   $("r-decode-btn").addEventListener("click", decodeState);
   reflex();
+  booted = true;
 })();
